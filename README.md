@@ -1,6 +1,6 @@
 # NOAA_At_Home
-Is YOUR weather satellite being defunded by fascist oligarch bootlickers? NO worries! We've got
-*~NOAA AT HOME~*
+Is YOUR weather satellite being defunded by *~fascist oligarch bootlickers~* The Legitimate Government? NO worries! We've got
+NOAA AT HOME
 
 When my husband came home from his job working at a combat medical unit and told me that NOAA was getting drastically cut, I got pissed off and decided I was going to start predicting the weather myself. 
 
