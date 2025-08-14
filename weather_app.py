@@ -4,10 +4,29 @@ from tkinter import messagebox
 from datetime import datetime
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import json
 
-root = tk.Tk()
-root.title("NOAA At Home")
+main_scrollable_frame = tk.Tk()
+screen_width = main_scrollable_frame.winfo_screenwidth()
+screen_height = main_scrollable_frame.winfo_screenheight()
+main_scrollable_frame.title("NOAA At Home")
+
+canvas = tk.Canvas(main_scrollable_frame)
+scrollbar = tk.Scrollbar(main_scrollable_frame, orient="vertical", command=canvas.yview)
+main_scrollable_frame = tk.Frame(canvas)
+
+main_scrollable_frame.bind
+(
+    "<Configure>",
+    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+)
+
+canvas.create_window((0, 0), window=main_scrollable_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
 
 DATA_FILE = "weather_data.json"
 
@@ -267,21 +286,37 @@ def show_averages(temperatures_list, humidities_list, dew_points_list, rainfall_
 #===========OPEN VIEW DATA WINDOW=========
 
 def open_view_data_window():
-    view_win = tk.Toplevel(root)
-    view_win.title("NOAA AT HOME - View Past Data")
+    view_scrollable_frame = tk.Toplevel(main_scrollable_frame)
+    view_scrollable_frame.title("NOAA AT HOME - View Past Data")
     
-    data_header_label = tk.Label(view_win, text="NOAA AT HOME - View Past Data", font=("Helvetica", 14, "bold"), fg="blue")
+    canvas = tk.Canvas(view_scrollable_frame)
+    scrollbar = tk.Scrollbar(view_scrollable_frame, orient="vertical", command=canvas.yview)
+    view_scrollable_frame = tk.Frame(canvas)
+
+    view_scrollable_frame.bind
+    (
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    canvas.create_window((0, 0), window=view_scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    data_header_label = tk.Label(view_scrollable_frame, text="NOAA AT HOME - View Past Data", font=("Helvetica", 14, "bold"), fg="blue")
     data_header_label.grid(row=0, column=0, columnspan=2, pady=(10, 10))
     
-    tk.Label(view_win, text="Start Date (YYYY-MM-DD): ").grid(row=1, column=0)
-    start_date = tk.Entry(view_win)
+    tk.Label(view_scrollable_frame, text="Start Date (YYYY-MM-DD): ").grid(row=1, column=0)
+    start_date = tk.Entry(view_scrollable_frame)
     start_date.grid(row=1, column=1)
     
-    tk.Label(view_win, text="End Date (YYYY-MM-DD): ").grid(row=2, column=0)
-    end_date = tk.Entry(view_win)
+    tk.Label(view_scrollable_frame, text="End Date (YYYY-MM-DD): ").grid(row=2, column=0)
+    end_date = tk.Entry(view_scrollable_frame)
     end_date.grid(row=2, column=1)
     
-    tree = ttk.Treeview(view_win, columns=("Date", "Temp", "Humidity", "Dew Point", "Rainfall", "Pressure"), show="headings")
+    tree = ttk.Treeview(view_scrollable_frame, columns=("Date", "Temp", "Humidity", "Dew Point", "Rainfall", "Pressure"), show="headings")
     tree.heading("Date", text="Date")
     tree.heading("Temp", text="Temp (°F)")
     tree.heading("Humidity", text="Humidity (%)")
@@ -342,7 +377,13 @@ def open_view_data_window():
             press.append(p)
 
         # --- Graph ---
-        fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+        screen_width = view_scrollable_frame.winfo_screenwidth()
+        screen_height = view_scrollable_frame.winfo_screenheight()
+        fig_width = screen_width / 100
+        fig_height = screen_height/200
+        
+        fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+        
         ax.plot(dates, temps, label="Temp (°F)", marker="o")
         ax.plot(dates, hums, label="Humidity (%)", marker="o")
         ax.plot(dates, dew_pts, label="Dew Point ", marker="o")
@@ -355,79 +396,79 @@ def open_view_data_window():
         ax.grid(True)
         fig.autofmt_xdate()
 
-        canvas = FigureCanvasTkAgg(fig, master=view_win)
+        canvas = FigureCanvasTkAgg(fig, master=view_scrollable_frame)
         canvas.get_tk_widget().grid(row=4, column=0, columnspan=2)
         canvas.draw()
         
         #avg label not displaying correctly in data window (but does display correctly in main window)
         
-        avg_label = tk.Label(view_win, text="Period Averages:", font=("Helvetica", 13), fg="blue")
+        avg_label = tk.Label(view_scrollable_frame, text="Period Averages:", font=("Helvetica", 13), fg="blue")
         avg_label.grid(row=50, column=0, columnspan=2, pady=(10, 5))
         show_averages(temps, hums, dew_pts, rains, press)
 
-    tk.Button(view_win, text="View", command=get_filtered_data).grid(row=4, column=0, columnspan=2, pady=5)
+    tk.Button(view_scrollable_frame, text="View", command=get_filtered_data).grid(row=4, column=0, columnspan=2, pady=5)
               
 #=========GUI============
 
-main_header_label = tk.Label(root, text="WE HAVE NOAA AT HOME", font=("Helvetica", 16, "bold"), fg="blue")
+main_header_label = tk.Label(main_scrollable_frame, text="WE HAVE NOAA AT HOME", font=("Helvetica", 16, "bold"), fg="blue")
 main_header_label.grid(row=0, column=0, columnspan=2, pady=(10, 5))
-main_header_label_2 = tk.Label(root, text="~a homemade weather app~", font=("Helvetica", 14, "italic"), fg="blue")
+main_header_label_2 = tk.Label(main_scrollable_frame, text="~a homemade weather app~", font=("Helvetica", 14, "italic"), fg="blue")
 main_header_label_2.grid(row=1, column=0, columnspan=2, pady=(10, 5))
 
-temp_label = tk.Label(root, text="Temperature (°F):")
+temp_label = tk.Label(main_scrollable_frame, text="Temperature (°F):")
 temp_label.grid(row=3, column=0, padx=10, pady=5, sticky="e")
-temp_entry = tk.Entry(root)
+temp_entry = tk.Entry(main_scrollable_frame)
 temp_entry.grid(row=3, column=1, padx=10, pady=5)
 
-humid_label = tk.Label(root, text="% Humidity:")
+humid_label = tk.Label(main_scrollable_frame, text="% Humidity:")
 humid_label.grid(row=4, column=0, padx=10, pady=5, sticky="e")
-humid_entry = tk.Entry(root)
+humid_entry = tk.Entry(main_scrollable_frame)
 humid_entry.grid(row=4, column=1, padx=10, pady=5)
 
-rain_label = tk.Label(root, text="Rainfall (in):")
+rain_label = tk.Label(main_scrollable_frame, text="Rainfall (in):")
 rain_label.grid(row=5, column=0, padx=10, pady=5, sticky="e")
-rain_entry = tk.Entry(root)
+rain_entry = tk.Entry(main_scrollable_frame)
 rain_entry.grid(row=5, column=1, padx=10, pady=5)
 
-pressure_label = tk.Label(root, text="Barometer Height (in):")
+pressure_label = tk.Label(main_scrollable_frame, text="Barometer Height (in):")
 pressure_label.grid(row=6, column=0, padx=10, pady=5, sticky="w")
-pressure_entry = tk.Entry(root)
+pressure_entry = tk.Entry(main_scrollable_frame)
 pressure_entry.grid(row=6, column=1, padx=10, pady=5)
 
-cloud_label = tk.Label(root, text="Clouds: ")
+cloud_label = tk.Label(main_scrollable_frame, text="Clouds: ")
 cloud_label.grid(row=7, column=0, padx=10, pady=5, sticky="e")
-cloud_entry = tk.Entry(root, width=30)
+cloud_entry = tk.Entry(main_scrollable_frame, width=30)
 cloud_entry.grid(row=7, column=1, padx=10, pady=5)
 
 for i, d in enumerate(directions):
     var = tk.IntVar() #0 is unchecked, 1 is checked
-    wind_direction = tk.Checkbutton(root, text=d, variable=var)
+    wind_direction = tk.Checkbutton(main_scrollable_frame, text=d, variable=var)
     wind_direction.grid(row=8+i, column=0, padx=40, pady=0.5, sticky="w")
     direction_vars[d] = var
     
 for i, s in enumerate(speeds):
     var = tk.IntVar() #0 is unchecked, 1 is checked
-    wind_speed = tk.Checkbutton(root, text=s, variable=var)
+    wind_speed = tk.Checkbutton(main_scrollable_frame, text=s, variable=var)
     wind_speed.grid(row=8+i, column=1, sticky="w", pady=0.5)
     speed_vars[s] = var
 
-submit_button = tk.Button(root, text="Enter Data", command=submit_data)
+submit_button = tk.Button(main_scrollable_frame, text="Enter Data", command=submit_data)
 submit_button.grid(row=20, column=0, columnspan=2, pady=10)
 
-viewPastData_button = tk.Button(root, text="View Past Data", command=open_view_data_window)
+viewPastData_button = tk.Button(main_scrollable_frame, text="View Past Data", command=open_view_data_window)
 viewPastData_button.grid(row=21, column=0, columnspan=2, pady=10)
 
-data_label = tk.Label(root, text="")
+data_label = tk.Label(main_scrollable_frame, text="")
 data_label.grid(row=22, column=0, columnspan=2, pady=10)
 
-prediction_label= tk.Label(root, text = "")
+prediction_label= tk.Label(main_scrollable_frame, text = "")
 prediction_label.grid(row=23, column=0, columnspan=2, pady=10)
 
-avg_label = tk.Label(root, text="No data yet.", font=("Helvetica", 10, "italic"), fg="blue")
+avg_label = tk.Label(main_scrollable_frame, text="No data yet.", font=("Helvetica", 10, "italic"), fg="blue")
 avg_label.grid(row=24, column=0, columnspan=2, pady=10)
       
     
 
 #=========MAIN========
 load_data()
-root.mainloop()
+main_scrollable_frame.mainloop()
