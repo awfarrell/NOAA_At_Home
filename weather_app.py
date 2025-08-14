@@ -4,12 +4,12 @@ from tkinter import messagebox
 from datetime import datetime
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 import json
 
 main_scrollable_frame = tk.Tk()
-screen_width = main_scrollable_frame.winfo_screenwidth()
-screen_height = main_scrollable_frame.winfo_screenheight()
+max_width = 360
+max_height = 640
+main_scrollable_frame(f"{max_width}x{max_height}")
 main_scrollable_frame.title("NOAA At Home")
 
 canvas = tk.Canvas(main_scrollable_frame)
@@ -287,6 +287,7 @@ def show_averages(temperatures_list, humidities_list, dew_points_list, rainfall_
 
 def open_view_data_window():
     view_scrollable_frame = tk.Toplevel(main_scrollable_frame)
+    view_scrollable_frame(f"{max_width}x{max_height}")
     view_scrollable_frame.title("NOAA AT HOME - View Past Data")
     
     canvas = tk.Canvas(view_scrollable_frame)
